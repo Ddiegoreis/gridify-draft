@@ -14,16 +14,26 @@ namespace GridifyDraft.Api.Controllers
         public ToDoController(ToDoContext context)
         {
             _context = context;
+
+            _context.ToDos.AddRange(ToDoSeed.ReturnToDos());
+            _context.SaveChanges();
         }
 
         [HttpGet("todos")]
         public IActionResult GetToDos([FromQuery]GridifyQuery modelQuery)
         {
-            if (!_context.ToDos.Any())
+            var result = _context.ToDos.GridifyQueryable(modelQuery);
+
+            return Ok(result);
+        }
+
+        [HttpGet("todos/done")]
+        public IActionResult GetDoneToDos()
+        {
+            GridifyQuery modelQuery = new GridifyQuery()
             {
-                _context.ToDos.AddRange(ToDoSeed.ReturnToDos());
-                _context.SaveChanges();
-            }
+                Filter = "Done=1"
+            };
 
             var result = _context.ToDos.GridifyQueryable(modelQuery);
 
